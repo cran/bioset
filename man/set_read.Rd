@@ -5,19 +5,22 @@
 \title{Read a data set from a data-sheet and turn it into a multi-column tibble.}
 \usage{
 set_read(file_name = "set_#NUM#.csv", path = ".", num = 1, sep = ",",
-  cols = 0, rows = 0, additional_vars = vector(),
+  dec = ".", cols = 0, rows = 0, additional_vars = vector(),
   additional_sep = "[^[:alnum:]]+")
 }
 \arguments{
 \item{file_name}{Name of the file from which to read the data. May contain
-"#NUM#" as a placeholder if you have multiple files (see num).}
+"#NUM#" as a placeholder if you have multiple files.}
 
-\item{path}{The path to the file (no trailing "/" or "\"!).}
+\item{path}{The path to the file (no trailing "/" or "\" !).}
 
 \item{num}{Number of the set to read, inserted for "#NUM#".}
 
 \item{sep}{Separator used in the csv-file, either "," or ";" (see
-\code{\link[utils:read.csv]{utils::read.csv()}})}
+\code{\link[utils:read.csv]{utils::read.csv()}}).}
+
+\item{dec}{The character used for decimal points (see \code{\link[utils:read.csv]{utils::read.csv()}}).
+"AUTO" will result in "." if \code{sep} is "," and "," for ";".}
 
 \item{cols}{Number of columns in the input matrix (\code{0} means auto-detect).}
 
@@ -29,10 +32,10 @@ additional columns.}
 
 \item{additional_sep}{String / RegExp that separates additional vars, e.g.:
 \code{"ID_blue_cold"} with \code{additional_sep = "_"} will be separated
-into three columns containg \code{"ID"}, \code{"blue"} and \code{"cold"}.
+into three columns containing \code{"ID"}, \code{"blue"} and \code{"cold"}.
 If the separated data would exceed the columns in \code{additional_vars}
 the last column will contain a string with separator (e.g.: \code{"blue_cold"}).
-If data is missing `NA`` is inserted.}
+If data is missing \code{NA} is inserted.}
 }
 \value{
 A tibble containing (at minimum) \code{set}, \code{position}, \code{sample_id},
@@ -53,7 +56,7 @@ read.csv(
   colClasses = "character"
 )
 
-# read into tibble
+# read into a tibble
 set_read(
   file_name = "values_names.csv",
   path = system.file("extdata", package = "bioset"),
@@ -116,5 +119,6 @@ set_read(
 }
 \seealso{
 Other set functions: \code{\link{set_calc_concentrations}},
-  \code{\link{set_calc_variability}}
+  \code{\link{set_calc_variability}},
+  \code{\link{sets_read}}
 }

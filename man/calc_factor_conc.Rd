@@ -41,18 +41,42 @@ mass / mass:
 
 Where "." symbolises a metric prefix (see \code{\link[=calc_factor_prefix]{calc_factor_prefix()}}) :
 
-For g, l, mol and M: m (milli), µ (micro), n (nano), p (pico) and f (femto).
+For g, l, mol and M: d (deci), c (centi), m (milli), µ (micro), n (nano),
+p (pico) and f (femto).
 
 For g you might use k (kilo) as well.
 
-For m^3 (cubic metres): d (deci), c (centi) and m (milli)
+For m^3 (cubic metres) you may only use: d (deci), c (centi) and m (milli).
 
 Note: \% w / v is (incorrectly) taken as a short hand for 0.1 g / l.
 }
 \examples{
-calc_factor_conc(from = "ng / ml", to = "g / l")
-calc_factor_conc(from = "ng / ml", to = "mmol / l", molar_mass = 150000)
+library("dplyr")
 
+# generate test data
+data <- tibble(
+  sample = c("A", "B", "C"),
+  conc = c(4.5, 2.3, 5.1),       # concentration in g  / l
+)
+
+fctr_ng_ml <- calc_factor_conc(from = "g/l", to = "ng/ml")
+# give molar mass in g / mol
+fctr_mol_l <- calc_factor_conc(from = "g/l", to = "M", molar_mass = 78.971)
+# give densities in g / l
+fctr_pc <- calc_factor_conc(from = "g/l", to = "\%v/v", density_solute = 4810)
+
+data \%>\%
+  mutate(
+    conc_ng_ml = conc * fctr_ng_ml,
+    conc_mol_l = conc * fctr_mol_l,
+    conc_pc = conc * fctr_pc
+)
+
+# throws an error
+\dontrun{
+# will throw an error because molar_mass is missing
+fctr_fail <- calc_factor_conc(from = "g/l", to = "mol/l")
+}
 }
 \seealso{
 Other conversion functions: \code{\link{calc_factor_prefix}},

@@ -3,6 +3,9 @@
 bioset
 ======
 
+-   [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/bioset)](https://cran.r-project.org/package=bioset)
+-   latest GitHub-Release: <https://github.com/randomchars42/bioset/releases>
+
 `bioset` is intended to help you working with sets of raw data.
 
 Working in a lab it is not uncommon to have a data set of raw values (because your measuring device spat it out) and you now need to somehow transform and organise the data so that you can work with it.
@@ -10,7 +13,26 @@ Working in a lab it is not uncommon to have a data set of raw values (because yo
 Installation
 ------------
 
-You can install `bioset` from github with:
+A stable version of `bioset` is available on CRAN: <https://cran.r-project.org/package=bioset>
+
+So all you need to do is:
+
+``` r
+install.packages("bioset")
+```
+
+You can find the latest additions and changes on GitHub. To spare CRAN administrators' time it is requested of all package authors not to submit changes too frequently.
+
+Consequently, I will make new features available on GitHub first. Packages I have not yet submitted to CRAN will be labelled `vX.Y.Z-pre.N` and appear under: <https://github.com/randomchars42/bioset/releases>.
+
+To install those packages you can use [`githubinstall`](https://cran.r-project.org/package=githubinstall)
+
+``` r
+# install.packages("githubinstall")
+gh_install_packages("bioset", ref = "vX.Y.Z-pre.N")
+```
+
+You can install the very latest changes in `bioset`-master from github with:
 
 ``` r
 # install.packages("devtools")
@@ -41,6 +63,12 @@ Suppose you have an `ods` / `xls(x)` file with raw values obtained from a measur
 | D   |  430|  386|  325|  298|  110|  119|
 
 Save them as `set_1.csv`- thats like an `ods` / `xls(x)` file but its basically a text file with the values separated by commas. In the current versions of LibreOffice / OpenOffice / Microsoft office theres an option "Save as" &gt; "csv".
+
+Load the package.
+
+``` r
+library("bioset")
+```
 
 Then you can use `set_read()` to get all values with their position as name in a nice tibble:
 
@@ -286,3 +314,84 @@ This will give you the mean and coefficient of variation (as well as n of the sa
 |    1| B6       | D\_1       | D    | 1   |    226|    NA|  2.2446437|         NA|         2|        228.5|   3.535534|  0.0154728|        2|    2.269557|  0.0352320|  0.0155237|
 |    1| C6       | B\_2       | B    | 2   |    413|    NA|  4.1081216|         NA|         2|        421.5|  12.020815|  0.0285191|        2|    4.192825|  0.1197889|  0.0285700|
 |    1| D6       | D\_2       | D    | 2   |    119|    NA|  1.1783757|         NA|         2|        114.5|   6.363961|  0.0555804|        2|    1.133533|  0.0634176|  0.0559469|
+
+The short way
+-------------
+
+If you need to read and transform multiple sets `sets_read` can do that for you.
+
+It takes basically the same arguments as `set_read`, `set_calc_concentrations` and `set_calc_variability` combined and combines their functionality. The principal difference is, that `sets_read` takes `sets` - the number of sets to process.
+
+It returns a list and may (`write_data = TRUE`) create two files in your current directory: `data_all.csv` and `data_samples.csv` with the processed data.
+
+`sets_read()`'s list holds the following items:
+
+-   `$all`: here you will find all the data , including calibrators, duplicates, ... (saved in `data_all.csv` if `write_data = TRUE`)
+-   `$samples`: only one row per distinct sample here - no calibrators, no duplicates -&gt; most often you will work with this data (saved in `data_samples.csv` if `write_data = TRUE`)
+-   `$set1`: a list
+    -   `$plot`: a plot showing you the function used to calculate the concentrations for this set. The points represent the calibrators.
+    -   `$model`: the model as returned by `model_func`
+-   (`$set2` - `$setN`): the same information for every set you have
+
+Take a look at the data
+
+``` r
+# now you may run it :)
+result_list <- sets_read(
+  sets = 1,
+  sep = ",",
+  additional_vars = c("name", "day"),
+  cal_names = c("CAL1", "CAL2", "CAL3", "CAL4"),
+  cal_values = c(1, 2, 3, 4) # ng / ml
+)
+```
+
+``` r
+result_list$all
+```
+
+|  set| position | sample\_id | name | day |  value|  real|   recovery|    n|  raw|  raw\_mean|    raw\_sd|    raw\_cv|  concentration|  concentration\_sd|  concentration\_cv|
+|----:|:---------|:-----------|:-----|:----|------:|-----:|----------:|----:|----:|----------:|----------:|----------:|--------------:|------------------:|------------------:|
+|    1| A1       | CAL1       | CAL1 | NA  |    102|     1|  1.0089686|    2|  102|      104.5|   3.535534|  0.0338329|       1.033881|          0.0352320|          0.0340774|
+|    1| B1       | CAL2       | CAL2 | NA  |    198|     2|  0.9828102|    2|  198|      200.5|   3.535534|  0.0176336|       1.990533|          0.0352320|          0.0176998|
+|    1| C1       | CAL3       | CAL3 | NA  |    296|     3|  0.9807341|    2|  296|      293.5|   3.535534|  0.0120461|       2.917289|          0.0352320|          0.0120770|
+|    1| D1       | CAL4       | CAL4 | NA  |    430|     4|  1.0693822|    2|  430|      408.0|  31.112698|  0.0762566|       4.058296|          0.3100418|          0.0763970|
+|    1| A2       | CAL1       | CAL1 | NA  |    107|     1|  1.0587942|    2|  107|      104.5|   3.535534|  0.0338329|       1.033881|          0.0352320|          0.0340774|
+|    1| B2       | CAL2       | CAL2 | NA  |    203|     2|  1.0077230|    2|  203|      200.5|   3.535534|  0.0176336|       1.990533|          0.0352320|          0.0176998|
+|    1| C2       | CAL3       | CAL3 | NA  |    291|     3|  0.9641256|    2|  291|      293.5|   3.535534|  0.0120461|       2.917289|          0.0352320|          0.0120770|
+|    1| D2       | CAL4       | CAL4 | NA  |    386|     4|  0.9597658|    2|  386|      408.0|  31.112698|  0.0762566|       4.058296|          0.3100418|          0.0763970|
+|    1| A3       | A\_1       | A    | 1   |    156|    NA|         NA|    2|  156|      150.5|   7.778175|  0.0516822|       1.492277|          0.0775105|          0.0519411|
+|    1| B3       | C\_1       | C    | 1   |    101|    NA|         NA|    2|  101|      111.0|  14.142136|  0.1274066|       1.098655|          0.1409281|          0.1282733|
+|    1| C3       | A\_2       | A    | 2   |    276|    NA|         NA|    2|  276|      279.5|   4.949747|  0.0177093|       2.777778|          0.0493248|          0.0177569|
+|    1| D3       | C\_2       | C    | 2   |    325|    NA|         NA|    2|  325|      311.5|  19.091883|  0.0612902|       3.096662|          0.1902529|          0.0614381|
+|    1| A4       | A\_1       | A    | 1   |    145|    NA|         NA|    2|  145|      150.5|   7.778175|  0.0516822|       1.492277|          0.0775105|          0.0519411|
+|    1| B4       | C\_1       | C    | 1   |    121|    NA|         NA|    2|  121|      111.0|  14.142136|  0.1274066|       1.098655|          0.1409281|          0.1282733|
+|    1| C4       | A\_2       | A    | 2   |    283|    NA|         NA|    2|  283|      279.5|   4.949747|  0.0177093|       2.777778|          0.0493248|          0.0177569|
+|    1| D4       | C\_2       | C    | 2   |    298|    NA|         NA|    2|  298|      311.5|  19.091883|  0.0612902|       3.096662|          0.1902529|          0.0614381|
+|    1| A5       | B\_1       | B    | 1   |    360|    NA|         NA|    2|  360|      351.0|  12.727922|  0.0362619|       3.490284|          0.1268353|          0.0363395|
+|    1| B5       | D\_1       | D    | 1   |    231|    NA|         NA|    2|  231|      228.5|   3.535534|  0.0154728|       2.269557|          0.0352320|          0.0155237|
+|    1| C5       | B\_2       | B    | 2   |    430|    NA|         NA|    2|  430|      421.5|  12.020815|  0.0285191|       4.192825|          0.1197889|          0.0285700|
+|    1| D5       | D\_2       | D    | 2   |    110|    NA|         NA|    2|  110|      114.5|   6.363961|  0.0555804|       1.133533|          0.0634176|          0.0559469|
+|    1| A6       | B\_1       | B    | 1   |    342|    NA|         NA|    2|  342|      351.0|  12.727922|  0.0362619|       3.490284|          0.1268353|          0.0363395|
+|    1| B6       | D\_1       | D    | 1   |    226|    NA|         NA|    2|  226|      228.5|   3.535534|  0.0154728|       2.269557|          0.0352320|          0.0155237|
+|    1| C6       | B\_2       | B    | 2   |    413|    NA|         NA|    2|  413|      421.5|  12.020815|  0.0285191|       4.192825|          0.1197889|          0.0285700|
+|    1| D6       | D\_2       | D    | 2   |    119|    NA|         NA|    2|  119|      114.5|   6.363961|  0.0555804|       1.133533|          0.0634176|          0.0559469|
+
+``` r
+result_list$samples
+```
+
+| position | sample\_id | name | day |  plate|    n|    raw|    raw\_sd|    raw\_cv|  concentration|  concentration\_sd|  concentration\_cv|
+|:---------|:-----------|:-----|:----|------:|----:|------:|----------:|----------:|--------------:|------------------:|------------------:|
+| A3       | A\_1       | A    | 1   |      1|    2|  150.5|   7.778175|  0.0516822|       1.492277|          0.0775105|          0.0519411|
+| B3       | C\_1       | C    | 1   |      1|    2|  111.0|  14.142136|  0.1274066|       1.098655|          0.1409281|          0.1282733|
+| C3       | A\_2       | A    | 2   |      1|    2|  279.5|   4.949747|  0.0177093|       2.777778|          0.0493248|          0.0177569|
+| D3       | C\_2       | C    | 2   |      1|    2|  311.5|  19.091883|  0.0612902|       3.096662|          0.1902529|          0.0614381|
+| A5       | B\_1       | B    | 1   |      1|    2|  351.0|  12.727922|  0.0362619|       3.490284|          0.1268353|          0.0363395|
+| B5       | D\_1       | D    | 1   |      1|    2|  228.5|   3.535534|  0.0154728|       2.269557|          0.0352320|          0.0155237|
+| C5       | B\_2       | B    | 2   |      1|    2|  421.5|  12.020815|  0.0285191|       4.192825|          0.1197889|          0.0285700|
+| D5       | D\_2       | D    | 2   |      1|    2|  114.5|   6.363961|  0.0555804|       1.133533|          0.0634176|          0.0559469|
+
+``` r
+result_list$set1$plot
+```

@@ -13,7 +13,7 @@ set_calc_concentrations(data, cal_names, cal_values, col_names = name,
 \item{data}{A tibble containing the data.}
 
 \item{cal_names}{A vector of strings containing the names of the samples used
-as calibrators,}
+as calibrators.}
 
 \item{cal_values}{A numeric vector with the known concentrations of those
 samples (must be in the same order).}
@@ -83,6 +83,7 @@ set_calc_concentrations(
 
 \dontrun{
 # notice that col_target is given a string
+# this will fail
 set_calc_concentrations(
   data = data,
   cal_names = names(cals),
@@ -115,5 +116,5 @@ rm(cals, data)
 }
 \seealso{
 Other set functions: \code{\link{set_calc_variability}},
-  \code{\link{set_read}}
+  \code{\link{set_read}}, \code{\link{sets_read}}
 }

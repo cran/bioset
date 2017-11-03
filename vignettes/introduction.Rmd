@@ -13,7 +13,6 @@ vignette: >
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  echo = FALSE,
   comment = "#>"
 )
 ```
@@ -24,9 +23,28 @@ Working in a lab it is not uncommon to have a data set of raw values (because yo
 
 ## Installation
 
-You can install `bioset` from github with:
+A stable version of `bioset` is available on CRAN: <https://cran.r-project.org/package=bioset>
 
-```{r gh-installation, echo = TRUE, eval = FALSE}
+So all you need to do is:
+
+```{r, eval = FALSE}
+install.packages("bioset")
+```
+
+You can find the latest additions and changes on GitHub. To spare CRAN administrators' time it is requested of all package authors not to submit changes too frequently.
+
+Consequently, I will make new features available on GitHub first. Packages I have not yet submitted to CRAN will be labelled `vX.Y.Z-pre.N` and appear under: <https://github.com/randomchars42/bioset/releases>. 
+
+To install those packages you can use [`githubinstall`](https://cran.r-project.org/package=githubinstall)
+
+```{r, eval = FALSE}
+# install.packages("githubinstall")
+gh_install_packages("bioset", ref = "vX.Y.Z-pre.N")
+```
+
+You can install the very latest changes in `bioset`-master from github with:
+
+```{r, eval = FALSE}
 # install.packages("devtools")
 devtools::install_github("randomchars42/bioset")
 ```
@@ -46,7 +64,7 @@ devtools::install_github("randomchars42/bioset")
 
 Suppose you have an `ods` / `xls(x)` file with raw values obtained from a measurement like this:
 
-```{r}
+```{r, echo = FALSE}
 data <-
   utils::read.csv(
     system.file("extdata", "values.csv", package = "bioset"),
@@ -61,13 +79,20 @@ knitr::kable(
 
 Save them as `set_1.csv`- thats like an `ods` / `xls(x)` file but its basically a text file with the values separated by commas. In the current versions of LibreOffice / OpenOffice / Microsoft office theres an option "Save as" > "csv".
 
+Load the package.
+
+```{r, eval = FALSE}
+library("bioset")
+```
+
+
 Then you can use `set_read()` to get all values with their position as name in a nice tibble:
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, eval = FALSE}
 set_read()
 ```
 
-```{r}
+```{r, echo = FALSE}
 data <- bioset::set_read(
   file_name = "values.csv",
   path = system.file("extdata", package = "bioset")
@@ -85,7 +110,7 @@ If your files are stored in `./files/` tell `set_read()` where to look via `path
 
 Before feeding your samples into your measuring device you most likely drafted some sort of plan which position corresponds to which sample (didn't you?).
 
-```{r}
+```{r, echo = FALSE}
 data <-
   utils::read.csv(
     system.file("extdata", "names.csv", package = "bioset"),
@@ -102,7 +127,7 @@ So you had some calibrators (1-4) and samples A, B, C, D, E, F, G, H, each in du
 
 To easily set the names for your samples just copy the names into your `set_1.csv`:
 
-```{r}
+```{r, echo = FALSE}
 data <-
   utils::read.csv(
     system.file("extdata", "values_names.csv", package = "bioset"),
@@ -117,7 +142,7 @@ knitr::kable(
 
 Tell `set_read()` your data contains the names and which column should hold those names by setting `additional_vars = c("name")`.
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, eval = FALSE}
 set_read(
   additional_vars = c("name")
 )
@@ -125,7 +150,7 @@ set_read(
 
 This will get you:
 
-```{r}
+```{r, echo = FALSE}
 data <- bioset::set_read(
   file_name = "values_names.csv",
   path = system.file("extdata", package = "bioset"),
@@ -140,7 +165,7 @@ Suppose samples A, B, C, D were taken at day 1 and E, F, G, H were taken from th
 
 It would be more elegant to encode that into the data:
 
-```{r}
+```{r, echo = FALSE}
 data <-
   utils::read.csv(
     system.file("extdata", "values_names_properties.csv", package = "bioset"),
@@ -155,13 +180,13 @@ knitr::kable(
 
 Now, tell `set_read()` your data contains the names and day by setting `additional_vars = c("name", "day")`. This will get you:
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, eval = FALSE}
 set_read(
   additional_vars = c("name", "day")
 )
 ```
 
-```{r}
+```{r, echo = FALSE}
 data <- bioset::set_read(
   file_name = "values_names_properties.csv",
   path = system.file("extdata", package = "bioset"),
@@ -177,7 +202,7 @@ Propably, your measuring device only gave you raw values (extinction rates / rel
 
 `set_calc_concentrations()` does exactly this for you:
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, eval = FALSE}
 set_calc_concentrations(
   data,
   cal_names = c("CAL1", "CAL2", "CAL3", "CAL4"),
@@ -185,7 +210,7 @@ set_calc_concentrations(
 )
 ```
 
-```{r}
+```{r, echo = FALSE}
 data <- bioset::set_calc_concentrations(
   data,
   cal_names = c("CAL1", "CAL2", "CAL3", "CAL4"),
@@ -203,7 +228,7 @@ So samples were measured in duplicates. For our further research you might want 
 
 `set_calc_variability()` to the rescue.
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, eval = FALSE}
 data <- set_calc_variability(
   data = data,
   ids = sample_id,
@@ -214,7 +239,7 @@ data <- set_calc_variability(
 
 This will give you the mean and coefficient of variation (as well as n of the samples and the standard deviation) for the columns `value` and `conc`. It will use `sample_id` to determine which rows belong to the same sample.
 
-```{r}
+```{r, echo = FALSE}
 data <- bioset::set_calc_variability(
   data = data,
   ids = sample_id,
@@ -225,3 +250,69 @@ data <- bioset::set_calc_variability(
 knitr::kable(data)
 ```
 
+## The short way
+
+If you need to read and transform multiple sets `sets_read` can do that for you.
+
+It takes basically the same arguments as `set_read`, `set_calc_concentrations` and `set_calc_variability` combined and combines their functionality. The principal difference is, that `sets_read` takes `sets` - the number of sets to process. 
+
+It returns a list and may (`write_data = TRUE`) create two files in your current directory:
+`data_all.csv` and `data_samples.csv` with the processed data.
+
+`sets_read()`'s list holds the following items:
+
+  * `$all`: here you will find all the data , including calibrators,
+    duplicates, ... (saved in `data_all.csv` if `write_data = TRUE`)
+  * `$samples`: only one row per distinct sample here - no calibrators, no
+    duplicates -> most often you will work with this data
+    (saved in `data_samples.csv` if `write_data = TRUE`)
+  * `$set1`: a list
+      * `$plot`: a plot showing you the function used to calculate the
+         concentrations for this set. The points represent the calibrators.
+      * `$model`: the model as returned by `model_func`
+  * (`$set2` - `$setN`): the same information for every set you have
+
+Take a look at the data
+
+```{r, eval = FALSE}
+# now you may run it :)
+result_list <- sets_read(
+  sets = 1,
+  sep = ",",
+  additional_vars = c("name", "day"),
+  cal_names = c("CAL1", "CAL2", "CAL3", "CAL4"),
+  cal_values = c(1, 2, 3, 4) # ng / ml
+)
+```
+
+```{r, echo = FALSE}
+result_list <- bioset::sets_read(
+  sets = 1,
+  sep = ",",
+  path = system.file("extdata", package = "bioset"),
+  additional_vars = c("name", "day"),
+  cal_names = c("CAL1", "CAL2", "CAL3", "CAL4"),
+  cal_values = c(1, 2, 3, 4), # ng / ml
+  write_data = FALSE
+)
+```
+
+```{r, eval = FALSE}
+result_list$all
+```
+
+```{r, echo = FALSE}
+knitr::kable(result_list$all)
+```
+
+```{r, eval = FALSE}
+result_list$samples
+```
+
+```{r, echo = FALSE}
+knitr::kable(result_list$samples)
+```
+
+```{r, eval = FALSE, warnings = FALSE}
+result_list$set1$plot
+```

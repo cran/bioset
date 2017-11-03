@@ -11,11 +11,13 @@
 #' @export
 #' @family set functions
 #' @param file_name Name of the file from which to read the data. May contain
-#'   "#NUM#" as a placeholder if you have multiple files (see num).
-#' @param path The path to the file (no trailing "/" or "\\"!).
+#'   "#NUM#" as a placeholder if you have multiple files.
+#' @param path The path to the file (no trailing "/" or "\\" !).
 #' @param num Number of the set to read, inserted for "#NUM#".
 #' @param sep Separator used in the csv-file, either "," or ";" (see
-#'   [utils::read.csv()])
+#'   [utils::read.csv()]).
+#' @param dec The character used for decimal points (see [utils::read.csv()]).
+#'   "AUTO" will result in "." if `sep` is "," and "," for ";".
 #' @param cols Number of columns in the input matrix (`0` means auto-detect).
 #' @param rows Number of rows containing values (not names / additional data)
 #'   in the input matrix (`0` means auto-detect).
@@ -23,10 +25,10 @@
 #'   additional columns.
 #' @param additional_sep String / RegExp that separates additional vars, e.g.:
 #'   `"ID_blue_cold"` with `additional_sep = "_"` will be separated
-#'   into three columns containg `"ID"`, `"blue"` and `"cold"`.
+#'   into three columns containing `"ID"`, `"blue"` and `"cold"`.
 #'   If the separated data would exceed the columns in `additional_vars`
 #'   the last column will contain a string with separator (e.g.: `"blue_cold"`).
-#'   If data is missing `NA`` is inserted.
+#'   If data is missing `NA` is inserted.
 #' @return A tibble containing (at minimum) `set`, `position`, `sample_id`,
 #'   `name` and `value`.
 #' @examples
@@ -37,7 +39,7 @@
 #'   colClasses = "character"
 #' )
 #'
-#' # read into tibble
+#' # read into a tibble
 #' set_read(
 #'   file_name = "values_names.csv",
 #'   path = system.file("extdata", package = "bioset"),
@@ -102,6 +104,7 @@ set_read <- function(
   path = ".",
   num = 1,
   sep = ",",
+  dec = ".",
   cols = 0,
   rows = 0,
   additional_vars = vector(),
@@ -112,34 +115,21 @@ set_read <- function(
     is.character(file_name),
     is.character(path),
     is_number(num),
-    is.character(sep),
     is_number(cols),
     is_number(rows),
     is.vector(additional_vars),
     is.character(additional_sep)
-    )
+  )
+
+  dec <- get_dec(dec = dec, sep = sep)
 
   # make the pipe operator available to us
   `%>%` <- magrittr::`%>%`
 
   # load file
-
-  file_name <- gsub(pattern = "#NUM#", replacement = num, x = file_name)
-  file_name <- normalizePath(file.path(path, file_name))
-
-  if (!file.exists(file_name)) {
-    throw_error(
-      "Cannot find file \"", file_name,
-      "\". Please check path (must not end with \"/\") ",
-      "and name_scheme (must contain \"#NUM#\")")
-  }
-
-  data_raw <- tibble::as_tibble(utils::read.csv(
-    file = file_name,
-    header = FALSE,
-    sep = sep,
-    colClasses = "character"
-  ))
+  file <- get_path_set(path = path, file_name = file_name, set_number = num)
+  check_file(file = file, report = "stop")
+  data_raw <- read_data(file = file, sep = sep, dec = dec, raw = TRUE)
 
   # check dimenions of input
 
@@ -157,13 +147,13 @@ set_read <- function(
     cols <- actual_cols
   } else {
     if (actual_cols < cols) {
-      throw_error(
+      stop(
         "Column count in sheet (", actual_cols,
         ") lower than expected (", cols,
         "). Reducing cols to actual column count.")
       cols <- actual_cols
     } else if (actual_cols > cols) {
-      throw_error(
+      stop(
         "Column count in sheet (", actual_cols,
         ") larger than expected (", cols,
         "). Ignoring residual columns.")
@@ -184,12 +174,12 @@ set_read <- function(
     required_rows <- rows * ifelse(actual_vars > 0, 2, 1)
 
     if (actual_rows < required_rows) {
-      throw_error(
+      stop(
         "Row count in sheet (", actual_rows,
         ") lower than required (", required_rows,
         ").")
     } else if (actual_rows > required_rows) {
-      throw_error(
+      stop(
         "Row count in sheet (", actual_rows,
         ") larger than expected (", required_rows,
         ").")
@@ -274,7 +264,7 @@ set_read <- function(
 #' @family set functions
 #' @param data A tibble containing the data.
 #' @param cal_names A vector of strings containing the names of the samples used
-#'   as calibrators,
+#'   as calibrators.
 #' @param cal_values A numeric vector with the known concentrations of those
 #'   samples (must be in the same order).
 #' @param col_names The name of the column where the `cal_names` can be
@@ -324,6 +314,7 @@ set_read <- function(
 #'
 #' \dontrun{
 #' # notice that col_target is given a string
+#' # this will fail
 #' set_calc_concentrations(
 #'   data = data,
 #'   cal_names = names(cals),
@@ -518,10 +509,25 @@ set_calc_variability <- function(data, ids, ...) {
   return(data)
 }
 
-# define as "global" to get rid of warnigns in R CMD check
-name <- NULL
-value <- NULL
-conc <- NULL
-recovery <- NULL
-real <- NULL
-n <- function() {}
+get_path_set <- function(path, file_name, set_number) {
+  file_name <- gsub(pattern = "#NUM#", replacement = set_number, x = file_name)
+  file <- get_path(path, file_name)
+  return(file)
+}
+
+get_dec <- function(dec, sep) {
+  stopifnot(
+    is.character(sep),
+    sep %in% c(";", ","),
+    is.character(dec),
+    dec %in% c(",", ".", "AUTO")
+  )
+
+  if (dec %in% c(",", ".")) {
+    return(dec)
+  } else if (sep == ",") {
+    return(".")
+  } else if (sep == ";") {
+    return(",")
+  }
+}
