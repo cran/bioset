@@ -12,7 +12,7 @@
 
 <meta name="author" content="Eike C. Kühn" />
 
-<meta name="date" content="2017-11-03" />
+<meta name="date" content="2018-04-04" />
 
 <title>Introduction</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction</h1>
 <h4 class="author"><em>Eike C. Kühn</em></h4>
-<h4 class="date"><em>2017-11-03</em></h4>
+<h4 class="date"><em>2018-04-04</em></h4>
 
 
 
@@ -88,7 +88,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="kw">gh_install_packages</span>(<span class="st">&quot;bioset&quot;</span>, <span class="dt">ref =</span> <span class="st">&quot;vX.Y.Z-pre.N&quot;</span>)</code></pre></div>
 <p>You can install the very latest changes in <code>bioset</code>-master from github with:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(&quot;devtools&quot;)</span>
-devtools::<span class="kw">install_github</span>(<span class="st">&quot;randomchars42/bioset&quot;</span>)</code></pre></div>
+devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">&quot;randomchars42/bioset&quot;</span>)</code></pre></div>
 <!--`bioset` is available on CRAN (<https://CRAN.R-project.org/package=bioset>)-->
 </div>
 <div id="why-what-bioset-can-do-for-you" class="section level2">
@@ -1787,7 +1787,7 @@ result_list &lt;-<span class="st"> </span><span class="kw">sets_read</span>(
   <span class="dt">cal_names =</span> <span class="kw">c</span>(<span class="st">&quot;CAL1&quot;</span>, <span class="st">&quot;CAL2&quot;</span>, <span class="st">&quot;CAL3&quot;</span>, <span class="st">&quot;CAL4&quot;</span>),
   <span class="dt">cal_values =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>) <span class="co"># ng / ml</span>
 )</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result_list$all</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result_list<span class="op">$</span>all</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -2244,7 +2244,7 @@ result_list &lt;-<span class="st"> </span><span class="kw">sets_read</span>(
 </tr>
 </tbody>
 </table>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result_list$samples</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result_list<span class="op">$</span>samples</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -2377,7 +2377,7 @@ result_list &lt;-<span class="st"> </span><span class="kw">sets_read</span>(
 </tr>
 </tbody>
 </table>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result_list$set1$plot</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result_list<span class="op">$</span>set1<span class="op">$</span>plot</code></pre></div>
 </div>
 
 
